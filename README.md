@@ -1,0 +1,1 @@
+# salesMind.ai
