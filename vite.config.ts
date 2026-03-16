@@ -9,8 +9,8 @@ export default defineConfig(({mode}) => {
     plugins: [react(), tailwindcss()],
     define: {
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-      'process.env.DASHBOARD_USERNAME': JSON.stringify(env.DASHBOARD_USERNAME || 'admin'),
-      'process.env.DASHBOARD_PASSWORD': JSON.stringify(env.DASHBOARD_PASSWORD || 'password123'),
+      'process.env.DASHBOARD_USERNAME': JSON.stringify(env.DASHBOARD_USERNAME),
+      'process.env.DASHBOARD_PASSWORD': JSON.stringify(env.DASHBOARD_PASSWORD),
     },
     resolve: {
       alias: {

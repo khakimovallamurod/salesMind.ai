@@ -2,9 +2,9 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, 
-  BarChart3, 
   TrendingUp, 
   Users, 
+  UserRound,
   DollarSign, 
   LineChart,
   FileText, 
@@ -15,9 +15,9 @@ import { cn } from '@/lib/utils';
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Boshqaruv paneli', path: '/' },
-  { icon: BarChart3, label: 'Bozor tahlili', path: '/market-analysis' },
   { icon: TrendingUp, label: 'Trend tahlili', path: '/trend-analysis' },
   { icon: Users, label: 'Raqobatchilar', path: '/competitors' },
+  { icon: UserRound, label: 'Mijozlar', path: '/customers' },
   { icon: DollarSign, label: 'Narx tahlili', path: '/price-analytics' },
   { icon: LineChart, label: 'Talab prognozi', path: '/demand-forecast' },
   { icon: FileText, label: 'Hisobotlar', path: '/reports' },

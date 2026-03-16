@@ -1,5 +1,19 @@
 import React from 'react';
 import { motion } from 'motion/react';
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  BarChart,
+  Bar,
+  ScatterChart,
+  Scatter,
+  ZAxis,
+} from 'recharts';
 
 type DemandRow = {
   product_id: string;
@@ -46,8 +60,48 @@ const evaluationMetrics = [
 
 const numberFormatter = new Intl.NumberFormat('en-US');
 
+function buildProductDemand(rows: DemandRow[]) {
+  const grouped = rows.reduce<Record<string, { sales: number; forecast: number; count: number }>>((acc, row) => {
+    if (!acc[row.product_id]) {
+      acc[row.product_id] = { sales: 0, forecast: 0, count: 0 };
+    }
+    acc[row.product_id].sales += row.sales_quantity;
+    acc[row.product_id].forecast += row.next_month_sales;
+    acc[row.product_id].count += 1;
+    return acc;
+  }, {});
+
+  return Object.entries(grouped).map(([product, stats]) => ({
+    product,
+    avgSales: Math.round(stats.sales / stats.count),
+    avgForecast: Math.round(stats.forecast / stats.count),
+  }));
+}
+
+function buildDemandTimeline(rows: DemandRow[]) {
+  return [...rows]
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    .map((row) => ({
+      date: row.date.slice(0, 7),
+      sales: row.sales_quantity,
+      forecast: row.next_month_sales,
+    }));
+}
+
+function buildMarketingForecastScatter(rows: DemandRow[]) {
+  return rows.map((row) => ({
+    x: Number((row.marketing_spend_UZS / 1_000_000).toFixed(2)),
+    y: row.next_month_sales,
+    z: Math.max(60, Math.round(row.construction_volume / 1000)),
+    product: row.product_id,
+  }));
+}
+
 export function DemandForecast() {
   const [imageMissing, setImageMissing] = React.useState(false);
+  const productDemandData = React.useMemo(() => buildProductDemand(demandSample), []);
+  const demandTimeline = React.useMemo(() => buildDemandTimeline(demandSample), []);
+  const marketingScatter = React.useMemo(() => buildMarketingForecastScatter(demandSample), []);
 
   return (
     <div className="p-8 space-y-8 max-w-[1600px] mx-auto w-full">
@@ -116,6 +170,75 @@ export function DemandForecast() {
                 ))}
               </tbody>
             </table>
+          </div>
+        </motion.div>
+      </section>
+
+      <section className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.24 }}
+          className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm"
+        >
+          <h3 className="text-base font-bold text-slate-900 mb-4">Mahsulotlar bo&apos;yicha talab: joriy vs prognoz</h3>
+          <div className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={productDemandData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis dataKey="product" tick={{ fontSize: 11 }} />
+                <YAxis tick={{ fontSize: 11 }} />
+                <Tooltip formatter={(value: number) => numberFormatter.format(value)} />
+                <Bar dataKey="avgSales" name="Joriy sales_quantity" fill="#2563eb" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="avgForecast" name="Prognoz next_month_sales" fill="#0f766e" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm"
+        >
+          <h3 className="text-base font-bold text-slate-900 mb-4">Vaqt bo&apos;yicha talab trendi</h3>
+          <div className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={demandTimeline}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis dataKey="date" tick={{ fontSize: 11 }} />
+                <YAxis tick={{ fontSize: 11 }} />
+                <Tooltip formatter={(value: number) => numberFormatter.format(value)} />
+                <Line type="monotone" dataKey="sales" name="Joriy sales_quantity" stroke="#6366f1" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="forecast" name="Prognoz next_month_sales" stroke="#14b8a6" strokeWidth={2} dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.36 }}
+          className="xl:col-span-2 bg-white rounded-2xl p-6 border border-slate-200 shadow-sm"
+        >
+          <h3 className="text-base font-bold text-slate-900 mb-4">Marketing xarajati va keyingi oy talabi</h3>
+          <div className="h-[320px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <ScatterChart margin={{ top: 10, right: 20, left: 6, bottom: 8 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis type="number" dataKey="x" name="Marketing" unit=" mln" tick={{ fontSize: 11 }} />
+                <YAxis type="number" dataKey="y" name="next_month_sales" tick={{ fontSize: 11 }} />
+                <ZAxis type="number" dataKey="z" range={[70, 320]} name="construction_volume (ming)" />
+                <Tooltip
+                  cursor={{ strokeDasharray: '4 4' }}
+                  formatter={(value: number, name) => (name === 'Marketing' ? `${value} mln` : numberFormatter.format(value))}
+                  labelFormatter={(_, payload) => payload?.[0]?.payload?.product ?? ''}
+                />
+                <Scatter data={marketingScatter} fill="#0ea5e9" />
+              </ScatterChart>
+            </ResponsiveContainer>
           </div>
         </motion.div>
       </section>
