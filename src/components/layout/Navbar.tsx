@@ -37,11 +37,11 @@ export function Navbar({ onLogout }: NavbarProps) {
 
         <button className="flex items-center gap-3 pl-2 pr-1 py-1 rounded-full hover:bg-slate-50 transition-colors">
           <div className="text-right hidden sm:block">
-            <p className="text-sm font-semibold text-slate-800">Alex Rivera</p>
-            <p className="text-[10px] font-medium text-slate-500 uppercase tracking-wider">Marketing Director</p>
+            <p className="text-sm font-semibold text-slate-800">Ozoda Yusufova</p>
+            <p className="text-[10px] font-medium text-slate-500 uppercase tracking-wider">Startapp meneger</p>
           </div>
           <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold shadow-md">
-            AR
+            OY
           </div>
         </button>
       </div>
